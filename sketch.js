@@ -1,27 +1,25 @@
 let video;
-let poseNet;
-let pose;
-let skeleton;
+let handpose;
+let hand;
 
 function setup() {
   createCanvas(windowWidth, windowHeight); // 建立全螢幕畫布
   video = createCapture(VIDEO);
   video.hide();
-  poseNet = ml5.poseNet(video, modelLoaded); //呼叫在ml5.js上的net函數，用此函數來判斷各位置，呼叫成功即執行function modelLoaded 
-  poseNet.on('pose', gotPoses);
+  handpose = ml5.handpose(video, modelLoaded); // 呼叫 handpose 模型
+  handpose.on('predict', gotHands); // 當偵測到手時執行 gotHands
 }
 
-function gotPoses(poses) {
-  //console.log(poses);
-  if (poses.length > 0) {
-    pose = poses[0].pose;  //把抓到的幾個點，都放置pose變數內
-    skeleton = poses[0].skeleton; //把相關於骨架的點都放到skeleton變數內
+function gotHands(results) {
+  if (results.length > 0) {
+    hand = results[0]; // 取得偵測到的第一隻手
+  } else {
+    hand = null;
   }
 }
 
-
 function modelLoaded() {   //顯示pose model已經準備就緒
-  console.log('poseNet ready');
+  console.log('Handpose model ready');
 }
 
 function draw() {
@@ -43,23 +41,15 @@ function draw() {
 
     image(video, 0, 0); // 顯示影像
 
-    if (pose) {
-        // 畫出所有偵測到的關鍵點 (如眼睛、耳朵、肩膀等)
-        for (let i = 0; i < pose.keypoints.length; i++) {
-            let x = pose.keypoints[i].position.x;
-            let y = pose.keypoints[i].position.y;
+    if (hand) {
+        // 畫出偵測到的 21 個手部關鍵點
+        for (let i = 0; i < hand.landmarks.length; i++) {
+            let landmark = hand.landmarks[i];
+            let x = landmark[0]; // x 座標
+            let y = landmark[1]; // y 座標
             fill(0, 255, 0);
             noStroke();
             ellipse(x, y, 10, 10);
-        }
-
-        // 畫出骨架連線
-        for (let i = 0; i < skeleton.length; i++) {
-            let a = skeleton[i][0];
-            let b = skeleton[i][1];
-            strokeWeight(2);
-            stroke(255);
-            line(a.position.x, a.position.y, b.position.x, b.position.y);
         }
     }
     pop(); // 結束座標轉換，避免影響到後續可能的繪製

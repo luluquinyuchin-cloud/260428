@@ -42,6 +42,23 @@ function draw() {
     image(video, 0, 0); // 顯示影像
 
     if (hand) {
+        stroke(255); // 設定連線顏色為白色
+        strokeWeight(2); // 設定線條粗細
+        
+        // 定義一個函式來串接指定範圍的關鍵點
+        const drawConnect = (start, end) => {
+            for (let i = start; i < end; i++) {
+                line(hand.landmarks[i][0], hand.landmarks[i][1], hand.landmarks[i + 1][0], hand.landmarks[i + 1][1]);
+            }
+        };
+
+        // 依照要求串接各手指關鍵點
+        drawConnect(0, 4);   // 0 到 4 (大拇指)
+        drawConnect(5, 8);   // 5 到 8 (食指)
+        drawConnect(9, 12);  // 9 到 12 (中指)
+        drawConnect(13, 16); // 13 到 16 (無名指)
+        drawConnect(17, 20); // 17 到 20 (小指)
+
         // 畫出偵測到的 21 個手部關鍵點
         for (let i = 0; i < hand.landmarks.length; i++) {
             let landmark = hand.landmarks[i];

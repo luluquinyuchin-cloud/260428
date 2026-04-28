@@ -5,8 +5,15 @@ let bubbles = []; // 儲存所有水泡的陣列
 
 function setup() {
   createCanvas(windowWidth, windowHeight); // 建立全螢幕畫布
-  video = createCapture(VIDEO);
+
+  // 增加攝影機啟動的成功與失敗處理
+  video = createCapture(VIDEO, function(stream) {
+    console.log('攝影機已啟動');
+  }, function(err) {
+    console.error('無法存取攝影機:', err);
+  });
   video.hide();
+
   handpose = ml5.handPose(video, modelLoaded); // 使用最新版 handPose (注意大寫 P)
   handpose.detectStart(video, gotHands); // 使用 v1.0 的 detectStart 進行持續偵測
   textFont('Microsoft JhengHei'); // 設定字體（選用）
@@ -25,7 +32,13 @@ function modelLoaded() {   //顯示pose model已經準備就緒
 }
 
 function draw() {
-    if (video.width === 0) return; // 確保影片已載入，避免計算縮放比例時出現 Infinity
+    // 確保影片數據已就緒且寬度大於 0
+    if (!video || video.width <= 0) {
+        background(200);
+        fill(0);
+        text("正在載入攝影機...", width/2, height/2);
+        return;
+    }
 
     background('#e7c6ff'); // 設定背景顏色
 
